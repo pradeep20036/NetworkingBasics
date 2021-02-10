@@ -3,6 +3,7 @@ package com.example.filefromurldownloader;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,12 +16,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import javax.net.ssl.HttpsURLConnection;
 
-//   String url ="http://faculty.iiitd.ac.in/~mukulika/s1.mp3";
+
+//   String url ="https://faculty.iiitd.ac.in/~mukulika/s1.mp3";
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSON_STORAGE_CODE =1000 ;
@@ -66,36 +71,27 @@ public class MainActivity extends AppCompatActivity {
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             int count;
             File file;
+            HttpURLConnection connection = null;
             try {
                 URL url = new URL(fileUrl);
-                URLConnection conection = url.openConnection();
-                conection.connect();
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoInput(true);
+                connection.connect();
+                int lenghtOfFile = connection.getContentLength();
+                InputStream input = connection.getInputStream();
 
-                int lenghtOfFile = conection.getContentLength();
-
-                InputStream input = conection.getInputStream();
-
-                File SDCardRoot = getFilesDir();
-
-                File folder = new File(SDCardRoot, "FolderName");
-                if (!folder.exists())
-                    folder.mkdir();
-                file = new File(folder, "FileName");
-
-                OutputStream output = new FileOutputStream(file);
+                File downloadFile=new File(getFilesDir(),"my_music");
+                FileOutputStream output=new FileOutputStream(downloadFile);
 
                 byte data[] = new byte[2000000];
-
                 long total = 0;
-
                 while ((count = input.read(data)) != -1) {
                     total += count;
-                    output.write(data, 0, count);
+                    output.write(data,0,count);
                     System.out.println("Success");
                 }
-
                 output.flush();
-
                 output.close();
                 input.close();
                 System.out.println("Done");
@@ -103,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return null;
             }
-
 
             return null;
 
